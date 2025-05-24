@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Documents {
+  id          String    @id @db.Uuid
+  userId      String    @db.Uuid
+  title       String    @db.VarChar(255)
+  description String?
+  imageUrl    String?   @db.VarChar(255)
+  issueDate   DateTime? @db.Timestamptz(6)
+  expiryDate  DateTime? @db.Timestamptz(6)
+  type        String    @db.VarChar(255)
+  status      String?   @default("valid") @db.VarChar(255)
+  createdAt   DateTime  @db.Timestamptz(6)
+  updatedAt   DateTime  @db.Timestamptz(6)
+  Users       Users     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Certificate {
+  id               String   @id @default(uuid())
+  pdfHash          String
+  type             String
+  patientPublicKey String
+  nftTxHash        String
+  createdAt        DateTime @default(now())
+}
+
+model MintDrafts {
+  id           String                 @id @db.VarChar(255)
+  publicKey    String                 @db.VarChar(255)
+  phone        String                 @db.VarChar(255)
+  type         String?                @db.VarChar(255)
+  metadataHash String                 @db.VarChar(255)
+  status       enum_MintDrafts_status @default(pending)
+  paidAt       DateTime?              @db.Timestamptz(6)
+  mintTx       String?                @db.VarChar(255)
+  createdAt    DateTime               @db.Timestamptz(6)
+  updatedAt    DateTime               @db.Timestamptz(6)
+}
+
+model Users {
+  id           String      @id @db.Uuid
+  phone        String      @unique @db.VarChar(255)
+  password     String      @db.VarChar(255)
+  refreshToken String?
+  createdAt    DateTime    @db.Timestamptz(6)
+  updatedAt    DateTime    @db.Timestamptz(6)
+  Documents    Documents[]
+}
+
+enum enum_MintDrafts_status {
+  pending
+  paid
+  minted
+}
